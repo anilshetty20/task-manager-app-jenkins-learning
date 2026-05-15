@@ -6,6 +6,10 @@ pipeline {
         nodejs 'nodejs'
     }
 
+    environment {
+        DOCKER_IMAGE = 'anil1576/task-manager-backend'
+    }
+
     stages {
 
         stage('Install Backend Dependencies') {
@@ -32,10 +36,26 @@ pipeline {
             }
         }
 
-        stage('Build Backend Docker Image') {
+        stage('Build Docker Image') {
             steps {
                 dir('backend') {
-                    sh 'docker build -t task-manager-backend .'
+                    sh 'docker build -t $DOCKER_IMAGE:latest .'
+                }
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub-creds',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+
+                    sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
+
+                    sh 'docker push $DOCKER_IMAGE:latest'
                 }
             }
         }
@@ -45,11 +65,11 @@ pipeline {
     post {
 
         success {
-            echo 'Pipeline executed successfully'
+            echo 'CI/CD Pipeline Executed Successfully'
         }
 
         failure {
-            echo 'Pipeline failed'
+            echo 'Pipeline Failed'
         }
     }
 }
