@@ -7,8 +7,12 @@ pipeline {
     }
 
     environment {
-        DOCKER_IMAGE = 'anil1576/task-manager-backend'
-        CONTAINER_NAME = 'backend-container'
+
+        BACKEND_IMAGE = 'anil1576/task-manager-backend'
+        FRONTEND_IMAGE = 'anil1576/task-manager-frontend'
+
+        BACKEND_CONTAINER = 'backend-container'
+        FRONTEND_CONTAINER = 'frontend-container'
     }
 
     stages {
@@ -37,15 +41,23 @@ pipeline {
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Build Backend Docker Image') {
             steps {
                 dir('backend') {
-                    sh 'docker build -t $DOCKER_IMAGE:latest .'
+                    sh 'docker build -t $BACKEND_IMAGE:latest .'
                 }
             }
         }
 
-        stage('Push Docker Image') {
+        stage('Build Frontend Docker Image') {
+            steps {
+                dir('frontend') {
+                    sh 'docker build -t $FRONTEND_IMAGE:latest .'
+                }
+            }
+        }
+
+        stage('Push Docker Images') {
             steps {
 
                 withCredentials([usernamePassword(
@@ -56,24 +68,43 @@ pipeline {
 
                     sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
 
-                    sh 'docker push $DOCKER_IMAGE:latest'
+                    sh 'docker push $BACKEND_IMAGE:latest'
+
+                    sh 'docker push $FRONTEND_IMAGE:latest'
                 }
             }
         }
 
-        stage('Deploy Container') {
+        stage('Deploy Backend Container') {
             steps {
 
                 sh '''
-                docker stop $CONTAINER_NAME || true
-                docker rm $CONTAINER_NAME || true
+                docker stop $BACKEND_CONTAINER || true
+                docker rm $BACKEND_CONTAINER || true
 
-                docker pull $DOCKER_IMAGE:latest
+                docker pull $BACKEND_IMAGE:latest
 
                 docker run -d \
-                --name $CONTAINER_NAME \
+                --name $BACKEND_CONTAINER \
                 -p 5000:5000 \
-                $DOCKER_IMAGE:latest
+                $BACKEND_IMAGE:latest
+                '''
+            }
+        }
+
+        stage('Deploy Frontend Container') {
+            steps {
+
+                sh '''
+                docker stop $FRONTEND_CONTAINER || true
+                docker rm $FRONTEND_CONTAINER || true
+
+                docker pull $FRONTEND_IMAGE:latest
+
+                docker run -d \
+                --name $FRONTEND_CONTAINER \
+                -p 3000:80 \
+                $FRONTEND_IMAGE:latest
                 '''
             }
         }
@@ -83,7 +114,7 @@ pipeline {
     post {
 
         success {
-            echo 'Full CI/CD Pipeline Executed Successfully'
+            echo 'Full Stack CI/CD Pipeline Executed Successfully'
         }
 
         failure {
