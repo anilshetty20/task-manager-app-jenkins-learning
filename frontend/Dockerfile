@@ -1,3 +1,4 @@
+# Docker file for frontend
 FROM node:22
 
 WORKDIR /app
