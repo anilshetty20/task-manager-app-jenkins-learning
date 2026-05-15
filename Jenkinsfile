@@ -8,12 +8,6 @@ pipeline {
 
     stages {
 
-        stage('Clone Repository') {
-            steps {
-                echo 'Repository cloned automatically by Jenkins'
-            }
-        }
-
         stage('Install Backend Dependencies') {
             steps {
                 dir('backend') {
@@ -34,6 +28,14 @@ pipeline {
             steps {
                 dir('frontend') {
                     sh 'npm run build'
+                }
+            }
+        }
+
+        stage('Build Backend Docker Image') {
+            steps {
+                dir('backend') {
+                    sh 'docker build -t task-manager-backend .'
                 }
             }
         }
