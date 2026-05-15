@@ -8,6 +8,7 @@ pipeline {
 
     environment {
         DOCKER_IMAGE = 'anil1576/task-manager-backend'
+        CONTAINER_NAME = 'backend-container'
     }
 
     stages {
@@ -60,12 +61,29 @@ pipeline {
             }
         }
 
+        stage('Deploy Container') {
+            steps {
+
+                sh '''
+                docker stop $CONTAINER_NAME || true
+                docker rm $CONTAINER_NAME || true
+
+                docker pull $DOCKER_IMAGE:latest
+
+                docker run -d \
+                --name $CONTAINER_NAME \
+                -p 5000:5000 \
+                $DOCKER_IMAGE:latest
+                '''
+            }
+        }
+
     }
 
     post {
 
         success {
-            echo 'CI/CD Pipeline Executed Successfully'
+            echo 'Full CI/CD Pipeline Executed Successfully'
         }
 
         failure {
