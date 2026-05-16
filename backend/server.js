@@ -8,7 +8,7 @@ app.use(cors());
 app.use(express.json());
 
 app.get("/", (req, res) => {
-    res.send("Version v2 deployed");
+    res.send("Backend successfully Running");
 });
 
 
