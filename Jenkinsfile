@@ -87,8 +87,13 @@ pipeline {
                 docker run -d \
                 --name $BACKEND_CONTAINER \
                 -p 5000:5000 \
+                -e DB_HOST=172.31.29.73 \
+                -e DB_PORT=5432 \
+                -e DB_USER=postgres \
+                -e DB_PASSWORD=hello123 \
+                -e DB_NAME=task_manager \
                 $BACKEND_IMAGE:latest
-                '''
+                 '''
             }
         }
 
