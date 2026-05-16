@@ -12,13 +12,25 @@ app.get("/", (req, res) => {
 });
 
 
-// GET ALL TASKS
 app.get("/tasks", async (req, res) => {
+
+    console.log("Tasks route hit");
+
     try {
+
         const result = await pool.query("SELECT * FROM tasks");
+
+        console.log(result.rows);
+
         res.json(result.rows);
+
     } catch (err) {
-        console.error(err.message);
+
+        console.error("DB ERROR:", err);
+
+        res.status(500).json({
+            error: err.message
+        });
     }
 });
 
